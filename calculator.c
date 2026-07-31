@@ -1,10 +1,20 @@
 #include <unistd.h>
 #include <termios.h>
+#include <stdlib.h>
 
-void enableRawMode(){
-	struct termios raw;
+struct termios orig_termios;
 
-	tcgetattr(STDIN_FILENO, &raw);
+
+void disableRawMode() {
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
+
+void enableRawMode() {
+	tcgetattr(STDIN_FILENO, &orig_termios);
+
+	struct termios raw = orig_termios;
+
+	atexit(disableRawMode);
 
 	raw.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
 	raw.c_oflag &= ~OPOST;
@@ -15,12 +25,29 @@ void enableRawMode(){
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
+char editorReadKey() {
+	char c;
+	read(STDIN_FILENO, &c, 1);
+
+	return c;
+}
+
+void editorProcessKeypress(){
+	char c = editorReadKey();
+	
+	switch (c) {
+		case 'q':
+			exit(0);
+			break;
+	}
+}
+
 int main(){
 
 	enableRawMode();
 
-	while(1){
-
+	while (1) {
+		editorProcessKeypress();
 	}
 	
 }
