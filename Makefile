@@ -1,2 +1,7 @@
+calculator: ccengine main
+	gcc ccengine.o main.o -o calculator 
+ccengine:
+	gcc ccengine.c -Wall -Wextra -std=c17 -c
 main:
-	gcc calculator.c -Wall -Wextra -std=c17 -o calculator
+	gcc main.c -Wall -Wextra -std=c17 -c
+

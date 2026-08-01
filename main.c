@@ -1,9 +1,21 @@
 #include <unistd.h>
 #include <termios.h>
 #include <stdlib.h>
+#include "ccengine.h"
 
 struct termios orig_termios;
 
+struct calculator calc;
+
+
+enum editorKeys {
+	ARROW_UP = 1000,
+	ARROW_DOWN,
+	ARROW_LEFT,
+	ARROW_RIGHT,
+	ENTER,
+	BACKSPACE,
+};
 
 void disableRawMode() {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
@@ -39,14 +51,30 @@ void editorProcessKeypress(){
 		case 'q':
 			exit(0);
 			break;
+		default:
+			displayAppend(&calc.dp, c);
+			break;
 	}
+}
+
+void initCalculator() {
+	calc.cx = 0;
+	calc.dp.len = 0;
+}
+
+void refreshScreen() {
+	write(STDOUT_FILENO, "\x1b[2J", 4);
+	write(STDOUT_FILENO, "\x1b[H", 3);
+	write(STDOUT_FILENO, calc.dp.string, calc.dp.len);
 }
 
 int main(){
 
 	enableRawMode();
+	initCalculator();
 
 	while (1) {
+		refreshScreen();
 		editorProcessKeypress();
 	}
 	
